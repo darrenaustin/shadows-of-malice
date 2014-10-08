@@ -1,0 +1,360 @@
+<!doctype html>
+
+<html class="ui-mobile">
+<head>
+    <title>Shadows of Malice Creature Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.css">
+    <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
+</head>
+
+<body class="ui-mobile-viewport">
+
+<div data-role="page" id="generator-page">
+    <div data-role="header">
+        <h1>Shadows of Malice Creature Generator</h1>
+    </div><!-- /header -->
+
+    <div data-role="content">
+        <form>
+            <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+                <legend>Type</legend>
+                <input type="radio" name="type-choice" id="type-normal" value="Normal" checked="checked">
+                <label for="type-normal">Normal</label>
+
+                <input type="radio" name="type-choice" id="type-lair" value="Lair">
+                <label for="type-lair">Lair</label>
+
+                <input type="radio" name="type-choice" id="type-guardian" value="Guardian">
+                <label for="type-guardian">Guardian</label>
+
+                <input type="radio" name="type-choice" id="type-shadow" value="Shadow">
+                <label for="type-shadow">Shadow</label>
+
+                <input type="radio" name="type-choice" id="type-xulthuls" value="Xulthul">
+                <label for="type-xulthuls">Xulth&ucirc;l</label>
+            </fieldset>
+
+            <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+                <legend>Terrain</legend>
+                <input type="radio" name="terrain-choice" id="terrain-plains" value="Plains" checked="checked">
+                <label for="terrain-plains">Plains</label>
+
+                <input type="radio" name="terrain-choice" id="terrain-water" value="Water">
+                <label for="terrain-water">Water</label>
+
+                <input type="radio" name="terrain-choice" id="terrain-desert" value="Desert">
+                <label for="terrain-desert">Desert</label>
+
+                <input type="radio" name="terrain-choice" id="terrain-forest" value="Forest">
+                <label for="terrain-forest">Forest</label>
+
+                <input type="radio" name="terrain-choice" id="terrain-hills" value="Hills">
+                <label for="terrain-hills">Hills</label>
+
+                <input type="radio" name="terrain-choice" id="terrain-mountains" value="Mountains">
+                <label for="terrain-mountains">Mountains</label>
+
+                <input type="radio" name="terrain-choice" id="terrain-wild" value="Wild">
+                <label for="terrain-wild">Wild</label>
+
+                <input type="radio" name="terrain-choice" id="terrain-swamp" value="Swamp">
+                <label for="terrain-swamp">Swamp</label>
+            </fieldset>
+
+            <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+                <legend>Game</legend>
+                <label for="num-avatars">Avatars</label>
+                <select name="num-avatars" id="num-avatars">
+                    <option value="2">2 avatars</option>
+                    <option value="3">3 avatars</option>
+                    <option value="4">4 avatars</option>
+                    <option value="5">5 avatars</option>
+                    <option value="6">6 avatars</option>
+                    <option value="7">7 avatars</option>
+                    <option value="8">8 avatars</option>
+                </select>
+                <label for="num-light-wells">Light Wells</label>
+                <select name="num-light-wells" id="num-light-wells">
+                    <option value="0">no light wells revealed</option>
+                    <option value="1">1 light well revealed</option>
+                </select>
+                <label for="num-dark-wells">Dark Wells</label>
+                <select name="num-dark-wells" id="num-dark-wells">
+                    <option value="0">no dark wells revealed</option>
+                    <option value="1">1 dark well revealed</option>
+                    <option value="2">2 dark wells revealed</option>
+                </select>
+            </fieldset>
+
+            <div class="ui-block-a">
+                <a data-role="button" onclick="generateCreature();" data-theme="a">Generate</a>
+            </div>
+        </form>
+
+    </div><!-- /content -->
+
+</div><!-- /page -->
+
+<div data-role="page" id="creature-page">
+    <div data-role="header">
+        <a href="#" data-icon="back" data-rel="back" title="Go back">Back</a>
+        <h1 id="creature-title">Creature</h1>
+    </div>
+    <div data-role="content">
+        <h1 id="creature-nature"></h1>
+        <p id="creature-nature-desc"></p>
+
+        <table data-role="table" id="creature-attributes" data-mode="reflow">
+            <tbody>
+            <tr>
+                <th style="text-align:right;">Power: </th>
+                <td id="creature-power"></td>
+            </tr>
+            <tr>
+                <th style="text-align:right;">+ to CR: </th>
+                <td id="creature-CR-bonus"></td>
+            </tr>
+            <tr>
+                <th style="text-align:right;">+ to Wounds: </th>
+                <td id="creature-wound-bonus"></td>
+            </tr>
+            <tr>
+                <th style="text-align:right;">Life Tokens: </th>
+                <td id="creature-life"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3 id="creature-abilities"></h3>
+
+    </div>
+</div>
+
+</body>
+
+<script>
+    var CreatureTitles = {
+        "Normal"   : "Creature",
+        "Lair"     : "Lair Creature",
+        "Guardian" : "Guardian Creature",
+        "Shadow"   : "Shadow Creature",
+        "Xulthul"  : "Xulth&ucirc;l"
+    }
+
+    var NatureL1 = {
+        "Plains"    : "Avian",
+        "Water"     : "Ichthyic",
+        "Desert"    : "Sectoid",
+        "Forest"    : "Reptilid",
+        "Hills"     : "Mammal",
+        "Mountains" : "Terrovan",
+        "Wild"      : "Arboran",
+        "Swamp"     : "Protean"
+    };
+    var NatureL2 = {
+        "Plains"    : "Mammal",
+        "Water"     : "Ichthyic",
+        "Desert"    : "Avian",
+        "Forest"    : "Arboran",
+        "Hills"     : "Terrovan",
+        "Mountains" : "Sectoid",
+        "Wild"      : "Protean",
+        "Swamp"     : "Reptilid"
+    };
+    var NatureL3 = {
+        "Plains"    : "Arboran",
+        "Water"     : "Reptilid",
+        "Desert"    : "Terrovan",
+        "Forest"    : "Protean",
+        "Hills"     : "Sectoid",
+        "Mountains" : "Avian",
+        "Wild"      : "Mammal",
+        "Swamp"     : "Ichthyic"
+    };
+    var Natures = {
+        1 : NatureL1,
+        2 : NatureL1,
+        3 : NatureL1,
+        4 : NatureL2,
+        5 : NatureL2,
+        6 : NatureL3
+    };
+    var NatureDesc = {
+        "Arboran"  : "Creatures derived from plants, vines, trees, or other vegetation or vegetal material.",
+        "Avian"    : "All feathered, winged, warm-blooded, egg-laying creatures.",
+        "Ichthyic" : "All fish, cephalopods, water serpents, and cold-blooded aquatic creatures.",
+        "Mammal"   : "All warm-blooded, hairy animals including canines, felines, primates, equines, humanoids, etc.",
+        "Protean"  : "Creatures of slime, ooze, mold, and fungus.",
+        "Reptilid" : "All cold-blooded reptiles and amphibians, including lizards, serpents, crocodilians, turtles, frogs, etc.",
+        "Sectoid"  : "All insects, arachnids, arthropods, and like creatures with exoskeletons, segmented bodies, or antennae.",
+        "Terrovan" : "Creatures derived from earth, mineral, rock, jewels, gemstones, or metal."
+    };
+
+    var CreaturePowers = {
+        1 : 1,
+        2 : 1,
+        3 : 1,
+        4 : 2,
+        5 : 2,
+        6 : 3
+    };
+
+    var ShadowPowers = {
+        0 : 3,
+        1 : 3,
+        2 : 3,
+        3 : 3,
+        4 : 3,
+        5 : 4,
+        6 : 4,
+        7 : 4,
+        8 : 4
+    };
+
+    var XulthulPowers = {
+        0 : 4,
+        1 : 4,
+        2 : 4,
+        3 : 4,
+        4 : 4,
+        5 : 5,
+        6 : 5,
+        7 : 5,
+        8 : 5
+    };
+
+    var CRBonus = {
+        1 : 0,
+        2 : 1,
+        3 : 2,
+        4 : 3,
+        5 : 4
+    };
+
+    var WoundBonus = {
+        1 : 0,
+        2 : "1d&#9733;",
+        3 : "2d&#9733;",
+        4 : "3d&#9733;",
+        5 : "4d&#9733;"
+    };
+
+    var LifeTokens = {
+        1 : 2,
+        2 : 4,
+        3 : 6,
+        4 : 8,
+        5 : 10
+    }
+
+    var CreatureAbilities = {
+        1 : 0,
+        2 : 0,
+        3 : 0,
+        4 : 1,
+        5 : 1,
+        6 : 2
+    };
+
+    var ShadowAbilities = {
+        0 : 1,
+        1 : 1,
+        2 : 1,
+        3 : 2,
+        4 : 2,
+        5 : 1,
+        6 : 1,
+        7 : 2,
+        8 : 2
+    };
+
+    var XulthulAbilities = {
+        0 : 2,
+        1 : 2,
+        2 : 2,
+        3 : 3,
+        4 : 3,
+        5 : 2,
+        6 : 2,
+        7 : 3,
+        8 : 3
+    };
+
+    var AbilityDescription = {
+        0 : "no abilities",
+        1 : "one ability",
+        2 : "two abilities",
+        3 : "three abilities"
+    }
+
+    function d6() {
+        return Math.floor(Math.random() * 6) + 1;
+    }
+
+    function randomNature(terrain) {
+        return Natures[d6()][terrain];
+    }
+
+    function randomPower(creatureType, numAvatars) {
+        switch (creatureType) {
+            case "Normal":
+                return CreaturePowers[d6()];
+            case "Lair":
+                return CreaturePowers[Math.min(6, d6() + 1)];
+            case "Guardian":
+                return 4;
+            case "Shadow":
+                return ShadowPowers[numAvatars];
+            case "Xulthul":
+                return XulthulPowers[numAvatars];
+            default:
+                return 0;
+        }
+    }
+
+    function randomAbilities(creatureType, numAvatars, numLightWells, numDarkWells) {
+        switch (creatureType) {
+            case "Normal":
+            case "Lair":
+                return CreatureAbilities[Math.max(1, Math.min(6, d6() - numLightWells + numDarkWells))];
+            case "Guardian":
+                return 2;
+            case "Shadow":
+                return ShadowAbilities[numAvatars];
+            case "Xulthul":
+                return XulthulAbilities[numAvatars];
+            default:
+                return 0;
+        }
+
+    }
+
+    function generateCreature() {
+        var creatureType = $("input[name*='type-choice']:checked").val();
+        var terrainType = $("input[name*='terrain-choice']:checked").val();
+        var numAvatars = parseInt($("#num-avatars").val(), 10);
+        var numLightWells = parseInt($("#num-light-wells").val(), 10);
+        var numDarkWells = parseInt($("#num-dark-wells").val(), 10);
+
+        var nature = randomNature(terrainType);
+        var power = randomPower(creatureType, numAvatars);
+        var abilities = randomAbilities(creatureType, numAvatars, numLightWells, numDarkWells);
+
+        $("#creature-title").html(CreatureTitles[creatureType]);
+        $("#creature-nature").text(nature);
+        $("#creature-nature-desc").text(NatureDesc[nature]);
+        $("#creature-power").text(power);
+        $("#creature-CR-bonus").text(CRBonus[power]);
+        $("#creature-wound-bonus").html(WoundBonus[power]);
+        $("#creature-life").html(creatureType !== "Shadow" ? LifeTokens[power] :
+                    "the amount that it left the Shadow Realm with");
+
+        $("#creature-abilities").text("Draw " + AbilityDescription[abilities] + " for the creature");
+
+        $.mobile.changePage("#creature-page");
+    };
+</script>
+
+</html>
